@@ -51,3 +51,66 @@
 		                e1.printStackTrace();
 		            }
 		        }
+
+
+
+### ThreadLocal
+- spring使用ThreadLocal来解决线程安全问题。  
+当使用ThreadLocal来维护变量时，ThreadLocal为每个线程维护一个线程独立的变量副本，这样每个线程操作自己的变量副本，解决多线程问题。
+和同步加锁解决多线程相比，这是一种空间换时间的做法。
+
+		public class ThreadLocalBase
+		{
+		
+		    private static ThreadLocal<Integer> num = new ThreadLocal<Integer>()
+		    {
+		        @Override
+		        public Integer initialValue()
+		        {
+		            return 0;
+		        }
+		
+		    };
+		
+		    public int getNextNum()
+		    {
+		        num.set(num.get() + 1);
+		
+		        return num.get();
+		    }
+		
+		    private static class Client extends Thread
+		    {
+		        private ThreadLocalBase base;
+		
+		        public Client(ThreadLocalBase base)
+		        {
+		            this.base = base;
+		        }
+		
+		        @Override
+		        public void run()
+		        {
+		            for (int i = 0; i < 3; i++)
+		            {
+		                System.out.println("thread:" + Thread.currentThread().getName()
+		                        + "    num:" + base.getNextNum());
+		            }
+		        }
+		    }
+		
+		    public static void main(String[] args)
+		    {
+		        ThreadLocalBase base = new ThreadLocalBase();
+		        Client c1 = new Client(base);
+		        Client c2 = new Client(base);
+		        Client c3 = new Client(base);
+		
+		        c1.start();
+		        c2.start();
+		        c3.start();
+		    }
+		
+		}
+		
+		
